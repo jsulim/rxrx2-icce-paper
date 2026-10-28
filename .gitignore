@@ -1,0 +1,14 @@
+# Keep the paper repository small and Overleaf-compatible.
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+*.pt
+*.pth
+*.tar
+*.zip
+raw_data/
