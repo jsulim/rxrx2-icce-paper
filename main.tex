@@ -5,7 +5,7 @@
 \usepackage{xcolor}
 \usepackage{url}
 
-\title{Reliability-Aware Phenotype Screening from Public Morphological Embeddings under Replicate Scarcity and Plate Shift}
+\title{Reliability-Aware Reduced-Channel Phenotype Screening under Treatment Shift}
 
 \author{\IEEEauthorblockN{Anonymous Author(s)}
 \IEEEauthorblockA{Affiliation withheld for review}}
@@ -14,7 +14,7 @@
 \maketitle
 
 \begin{abstract}
-High-content cell imaging can support early-stage perturbation screening, but morphology-based predictions may be unstable across experimental plates, concentrations, replicates, and previously unseen treatments. We study reliability-aware broad functional screening of 37 immune and vascular stimuli in public RxRx2 HUVEC Cell Painting data. The primary protocol holds out treatments, preventing images from the same stimulus from appearing in both training and testing. Released 128-dimensional embeddings support moderate four-class screening performance, while a compact Logistic model preserves performance after dimensional reduction. More importantly, aggregation across replicate wells improves condition-level balanced accuracy from 0.416 to 0.465, with the largest gain under low within-treatment concentration. We further quantify plate-associated similarity differences and evaluate an unlabeled plate-centering baseline. A confidence-aware defer policy reduces error among accepted predictions while referring uncertain cases for re-measurement. Finally, an ImageNet-pretrained six-channel MobileNetV3-Small achieves 0.402 macro-F1 and 0.400 balanced accuracy on the strict raw-image test. These results position reliability controls---rather than unqualified functional classification---as a practical component of lightweight phenotype-screening pipelines.
+High-content cell imaging can support early-stage perturbation screening, but morphology-based predictions may be unstable across experimental plates, concentrations, replicates, and previously unseen treatments. We study reliability-aware broad functional screening of 37 immune and vascular stimuli in public RxRx2 HUVEC Cell Painting data. The primary protocol holds out treatments, preventing images from the same stimulus from appearing in both training and testing. Released 128-dimensional embeddings support moderate four-class screening performance, while a compact Logistic model preserves performance after dimensional reduction. More importantly, aggregation across replicate wells improves condition-level balanced accuracy from 0.416 to 0.465, with the largest gain under low within-treatment concentration. We further quantify plate-associated similarity differences and evaluate an unlabeled plate-centering baseline. A confidence-aware defer policy reduces error among accepted predictions while referring uncertain cases for re-measurement. In raw-image experiments, ImageNet-pretrained MobileNetV3-Small achieved $0.398\pm0.002$ balanced accuracy with all six fluorescence channels across two seeds; reducing the input to DNA, RNA, and mitochondrial channels reduced balanced accuracy to $0.362\pm0.003$. These results position reliability controls and explicit acquisition--accuracy trade-offs as practical components of lightweight phenotype-screening pipelines.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -22,14 +22,14 @@ Cell Painting, high-content screening, phenotype embeddings, reliability, batch 
 \end{IEEEkeywords}
 
 \section{Introduction}
-High-content microscopy converts cellular responses to perturbations into images and learned representations. A practical screening pipeline must decide not only which broad response group is predicted, but also whether the prediction is reliable enough to act on. This work evaluates treatment-held-out functional screening and reliability controls for public HUVEC Cell Painting data.
+High-content microscopy converts cellular responses to perturbations into images and learned representations. Cell Painting provides multiplexed structural measurements that support mechanism-oriented screening, but its biological signal can be confounded by experimental and imaging variation \cite{cimini2023,arevalo2024}. A practical screening pipeline must decide not only which broad response group is predicted, but also whether the prediction is reliable enough to act on. This work evaluates treatment-held-out functional screening, reliability controls, and reduced-channel acquisition for public HUVEC Cell Painting data.
 
 \section{Materials and Methods}
 \subsection{Data and functional labels}
-We use released RxRx2 HUVEC metadata, 128-dimensional image embeddings, and a selected raw six-channel image subset. Pharmacy-reviewed labels group 37 treatments into type I/II interferons, IL-1/TNF-superfamily cytokines, CXC/CC chemokines, and angiogenic/vascular-regulatory factors. Type-III interferon ligands IL-28A, IL-28B, and IL-29 are excluded because of limited expected HUVEC responsiveness.
+We use released RxRx2 HUVEC metadata, image embeddings, and a selected raw six-channel image subset \cite{rxrx2}. Pharmacy-reviewed labels group 37 treatments into type I/II interferons, IL-1/TNF-superfamily cytokines, CXC/CC chemokines, and angiogenic/vascular-regulatory factors. Type-III interferon ligands IL-28A, IL-28B, and IL-29 are excluded because of limited expected HUVEC responsiveness.
 
 \subsection{Evaluation and models}
-Treatments are held out between training, validation, and test sets. We benchmark Logistic Regression, XGBoost, and a small MLP on released embeddings. For raw images, we fine-tune an ImageNet-pretrained MobileNetV3-Small with a six-channel input stem. Reliability analyses include well aggregation, plate-associated similarity, unlabeled plate centering, and confidence-based deferral.
+Treatments are held out between training, validation, and test sets. We benchmark Logistic Regression, XGBoost, and a small MLP on released embeddings. For raw images, we fine-tune an ImageNet-pretrained MobileNetV3-Small with an expanded fluorescence input stem. We compare all six channels against a three-channel DNA/RNA/mitochondria configuration and a two-channel DNA/mitochondria configuration. Six- and three-channel models are repeated with two independent random seeds; the two-channel configuration is exploratory with one seed. Reliability analyses include well aggregation, plate-associated similarity, unlabeled plate centering, and confidence-based deferral.
 
 \section{Results}
 \subsection{Embedding baselines and compact deployment}
@@ -55,11 +55,35 @@ Within-condition embedding similarity is higher for same-plate pairs (0.885) tha
 \label{fig:plate}
 \end{figure}
 
-\subsection{Raw-image pretrained CNN extension}
-The pretrained six-channel MobileNetV3-Small reaches 0.402 Macro-F1 and 0.400 balanced accuracy on the strict treatment-held-out test, improving substantially over the prior scratch-CNN baseline but remaining below released-embedding benchmarks. Planned channel ablations will test whether a reduced set of biologically complementary channels retains this result.
+\subsection{Reduced-channel raw-image screening}
+Table~\ref{tab:channels} and Fig.~\ref{fig:channels} summarize raw-image ablations under the same treatment-held-out protocol. The six-channel configuration was strongest and stable across seeds (balanced accuracy $0.398\pm0.002$). Reducing input to DNA/RNA/mitochondria lowered balanced accuracy to $0.362\pm0.003$ and Macro-F1 to $0.348\pm0.020$. The two-channel DNA/mitochondria setting obtained similar single-seed balanced accuracy (0.365), but this result is exploratory and should not be used to rank two versus three channels. Thus, reduced acquisition lowered computational burden, but complementary multi-organelle information remained beneficial for robust screening of unseen treatments.
+
+\begin{table}[t]
+\caption{Strict treatment-held-out raw-image channel ablation. Mean $\pm$ standard deviation is reported when two seeds are available.}
+\label{tab:channels}
+\centering
+\begin{tabular}{lccc}
+\toprule
+Input configuration & Macro-F1 & BA & Seeds \\
+\midrule
+6 channels (all stains) & $0.394\pm0.011$ & $0.398\pm0.002$ & 2 \\
+3 channels (DNA/RNA/Mito) & $0.348\pm0.020$ & $0.362\pm0.003$ & 2 \\
+2 channels (DNA/Mito) & 0.348 & 0.365 & 1$^*$ \\
+\bottomrule
+\end{tabular}
+\\[-2pt]
+{\footnotesize $^*$Exploratory single-seed result.}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_channel_ablation.png}
+\caption{Raw-image channel ablation. All models use a treatment-held-out test set. Error bars show standard deviation across two seeds; the hatched two-channel bar is exploratory.}
+\label{fig:channels}
+\end{figure}
 
 \section{Discussion and Limitations}
-The four broad groups are biologically reviewed but are not equally separable in released HUVEC morphology embeddings: the chemokine--angiogenic binary diagnostic is near chance. Results also decrease under HUVEC domain shift. Therefore, the system should be framed as reliability-aware candidate screening and re-measurement prioritization, not clinical diagnosis or definitive mechanism annotation.
+The four broad groups are biologically reviewed but are not equally separable in released HUVEC morphology embeddings: the chemokine--angiogenic binary diagnostic is near chance. Results also decrease under HUVEC domain shift. The reduced-channel experiment uses a subset of a high-content research assay and does not demonstrate operation on a consumer-grade microscope. Therefore, the system should be framed as reliability-aware candidate screening and re-measurement prioritization, not clinical diagnosis, definitive mechanism annotation, or a deployed consumer device.
 
 \section{Conclusion}
 Replicate aggregation, batch-awareness, compact classifiers, and uncertainty-aware referral provide useful controls for lightweight morphology-based screening under treatment shift.

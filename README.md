@@ -11,4 +11,4 @@ This repository contains only the LaTeX manuscript, final figures and compact re
 3. Avoid editing the same LaTex lines independently on GitHub and Overleaf before synchronization.
 4. Never add raw images, archives, embeddings or model checkpoints to this repository.
 
-The current manuscript is an evidence-backed draft skeleton. Results are frozen only after the 3-channel and 2-channel GPU ablations finish.
+The current manuscript includes the completed 6/3/2-channel ablation. Six- and three-channel models are evaluated with two seeds; the two-channel configuration remains exploratory with one seed.
