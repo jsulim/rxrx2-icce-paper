@@ -14,7 +14,7 @@
 \maketitle
 
 \begin{abstract}
-High-content cell imaging can support early-stage perturbation screening, but morphology-based predictions may be unstable across experimental plates, concentrations, replicates, and previously unseen treatments. We study reliability-aware broad functional screening of 37 immune and vascular stimuli in public RxRx2 HUVEC Cell Painting data. The primary protocol holds out treatments, preventing images from the same stimulus from appearing in both training and testing. Released 128-dimensional embeddings support moderate four-class screening performance, while a compact Logistic model preserves performance after dimensional reduction. More importantly, aggregation across replicate wells improves condition-level balanced accuracy from 0.416 to 0.465, with the largest gain in the low within-treatment concentration-rank subset. We further quantify plate-associated similarity differences and evaluate an unlabeled plate-centering baseline. A confidence-aware defer policy reduces error among accepted predictions while referring uncertain cases for re-measurement. In raw-image experiments, ImageNet-pretrained MobileNetV3-Small achieved $0.398\pm0.002$ balanced accuracy with all six fluorescence channels across two seeds; reducing the input to DNA, RNA, and mitochondrial channels reduced balanced accuracy to $0.362\pm0.003$. These results position reliability controls and explicit acquisition--accuracy trade-offs as practical components of lightweight phenotype-screening pipelines.
+High-content cell imaging can support early-stage perturbation screening, but morphology-based predictions may be unstable across experimental plates, concentrations, replicates, and previously unseen treatments. We study reliability-aware broad functional screening of 37 immune and vascular stimuli in public RxRx2 HUVEC Cell Painting data. The primary protocol holds out treatments, preventing images from the same stimulus from appearing in both training and testing. Released 128-dimensional embeddings support moderate four-class screening performance (balanced accuracy 0.442), and a 6~KB Logistic model retains this performance after reduction to 32 principal components; however, treatment-level bootstrap intervals are wide and predictions are biased toward the largest, chemokine group. More importantly, aggregation across replicate wells improves condition-level balanced accuracy from 0.416 to 0.465, with the largest gain in the low within-treatment concentration-rank subset. We further quantify plate-associated similarity differences and evaluate an unlabeled plate-centering baseline. A confidence-aware defer policy reduces error among accepted predictions while referring uncertain cases for re-measurement. In raw-image experiments, ImageNet-pretrained MobileNetV3-Small achieved $0.398\pm0.002$ balanced accuracy with all six fluorescence channels across two seeds; reducing the input to DNA, RNA, and mitochondrial channels reduced balanced accuracy to $0.362\pm0.003$ while changing network compute by less than 10\%, so the benefit of channel reduction lies in acquisition and data volume rather than inference cost. These results position reliability controls and explicit acquisition--accuracy trade-offs as practical components of lightweight phenotype-screening pipelines.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -28,19 +28,41 @@ Prior Cell Painting workflows emphasize replicate reproducibility and batch corr
 
 \section{Materials and Methods}
 \subsection{Data and functional labels}
-We use released RxRx2 HUVEC metadata, image embeddings, and a selected raw six-channel image subset \cite{rxrx2}. Pharmacy-reviewed labels group 37 treatments into type I/II interferons, IL-1/TNF-superfamily cytokines, CXC/CC chemokines, and angiogenic/vascular-regulatory factors. Type-III interferon ligands IL-28A, IL-28B, and IL-29 are excluded because of limited expected HUVEC responsiveness.
+We use released RxRx2 HUVEC metadata, image embeddings, and a selected raw six-channel image subset \cite{rxrx2}. Pharmacy-reviewed labels group 37 treatments into type I/II interferons, IL-1/TNF-superfamily cytokines, CXC/CC chemokines, and angiogenic/vascular-regulatory factors. Type-III interferon ligands IL-28A, IL-28B, and IL-29 are excluded because of limited expected HUVEC responsiveness. The four groups contain 5, 8, 16, and 8 treatments, respectively, so the chemokine group is twice as large as the others. Each treatment is applied at six concentrations in two HUVEC experiments (HUVEC-1 and HUVEC-2). The resulting embedding set contains 10,642 image sites from 2,664 wells on 24 plates.
 
 \subsection{Evaluation and models}
-Treatments are held out between training, validation, and test sets, so an individual treatment cannot be memorized from images seen during training. We report macro-F1 and balanced accuracy (BA), with BA handling unequal class recall. We benchmark Logistic Regression, XGBoost \cite{chen2016}, and a small MLP on released embeddings. For raw images, we fine-tune ImageNet-pretrained MobileNetV3-Small \cite{howard2019} with an expanded fluorescence input stem. We compare all six channels against a three-channel DNA/RNA/mitochondria configuration and a two-channel DNA/mitochondria configuration. Six- and three-channel models are repeated with two independent random seeds; the two-channel configuration is exploratory with one seed.
+All experiments hold out entire treatments, so no image of a test stimulus is seen during training. Two protocols are used. \emph{Embedding experiments} use five-fold stratified group cross-validation with treatment as the group and pool out-of-fold predictions over all 37 treatments. \emph{Raw-image experiments} use one fixed split of 23 training, 5 validation, and 9 test treatments, with every group represented in each split, because repeated CNN training per fold was computationally impractical. Absolute scores from the two protocols are therefore not directly comparable. We report macro-F1 and balanced accuracy (BA), with BA handling unequal class recall. For probabilistic models we also report expected calibration error (ECE, ten bins) and the multi-class Brier score, and we estimate 95\% confidence intervals with a treatment-level cluster bootstrap (1,000 resamples of treatments).
 
-For reliability analyses, four image sites are first averaged into a well-level embedding. Multiple wells with the same treatment, concentration, and experiment are then averaged to form a condition-level representation. We quantify within-condition plate-associated similarity, assess simple unlabeled plate centering, and evaluate confidence thresholding as a selective prediction policy \cite{geifman2017}. These analyses do not claim a new batch-correction or uncertainty algorithm; they quantify practical controls in the present screening setting.
+On released embeddings we benchmark standardized, class-balanced Logistic Regression, XGBoost \cite{chen2016} (250 trees, depth 4, learning rate 0.06, row and column subsampling 0.85), and a small MLP (hidden layers of 128 and 64 units with early stopping). For dimensional reduction, principal component analysis is fitted inside each training fold. Inference cost is measured as single-site \texttt{predict\_proba} latency on a laptop CPU (Intel Core Ultra 7 255H) together with the serialized model size.
+
+For raw images, we fine-tune ImageNet-pretrained MobileNetV3-Small \cite{howard2019}. Its first convolution is replaced by a $C$-channel convolution initialized with the channel-averaged RGB filter scaled by $3/C$, and the classifier is replaced by a four-way output. Each site is resized to $224\times224$, augmented with random flips and $90^\circ$ rotations, and sampled with class-balanced weights. Training uses AdamW (learning rate $10^{-4}$, weight decay $10^{-4}$), batch size 32, and up to 25 epochs with early stopping (patience 5) on validation performance. We compare all six channels against a three-channel DNA/RNA/mitochondria configuration and a two-channel DNA/mitochondria configuration; the channel subsets were fixed before inspecting test results. Six- and three-channel models are repeated with two random seeds; the two-channel configuration is exploratory with one seed.
+
+For reliability analyses, four image sites are first averaged into a well-level embedding. Multiple wells with the same treatment, concentration, and experiment are then averaged to form a condition-level representation. We quantify within-condition plate-associated similarity, assess simple unlabeled plate centering (subtracting each plate's mean embedding, which requires no labels), and evaluate confidence thresholding as a selective prediction policy \cite{geifman2017}. For nested deferral, one complete training treatment per group is withheld in each outer fold as a calibration set; the lowest confidence threshold whose calibration error does not exceed 0.40 is selected and then applied unchanged to the unseen outer test fold. These analyses do not claim a new batch-correction or uncertainty algorithm; they quantify practical controls in the present screening setting.
 
 \section{Results}
 \subsection{Embedding baselines and compact deployment}
-The released embeddings yield moderate treatment-held-out performance. XGBoost attains Macro-F1 0.447, whereas Logistic Regression attains the highest balanced accuracy (0.442) with an approximately 8~KB serialized model. Reducing the Logistic input from 128 to 32 dimensions retains balanced accuracy near 0.440. Thus, the post-embedding decision layer can be compact, although this does not reduce the cost of producing the upstream embedding.
+Table~\ref{tab:embedding} summarizes treatment-held-out performance on released embeddings. XGBoost attains the highest Macro-F1 (0.447) and the best calibration (ECE 0.030), whereas Logistic Regression attains the highest balanced accuracy (0.442) with a 6.1~KB serialized model and 0.47~ms single-site CPU latency. The small MLP is both less accurate and poorly calibrated (ECE 0.477), making it an unsuitable basis for confidence-based deferral. Treatment-level bootstrap intervals are wide (Logistic BA 95\% CI 0.330--0.549) and overlap across all three models; with only 37 treatments, the model ranking should not be over-interpreted. Reducing the Logistic input to 32 or 64 principal components retains balanced accuracy (0.446 and 0.447), whereas 16 components lower it to 0.431. Thus, the post-embedding decision layer can be compact, although this does not reduce the cost of producing the upstream embedding.
+
+\begin{table}[t]
+\caption{Treatment-held-out embedding baselines (pooled five-fold out-of-fold predictions). CI: 95\% treatment-level bootstrap interval for BA. ms: single-site CPU latency. KB: serialized model size.}
+\label{tab:embedding}
+\centering
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcccccc}
+\toprule
+Model & F1 & BA & BA 95\% CI & ECE & ms & KB \\
+\midrule
+Logistic & 0.431 & \textbf{0.442} & 0.330--0.549 & 0.071 & 0.47 & 6.1 \\
+XGBoost & \textbf{0.447} & 0.438 & 0.335--0.535 & \textbf{0.030} & 2.57 & 1,624 \\
+Small MLP & 0.414 & 0.417 & 0.318--0.501 & 0.477 & 0.56 & 136 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Per-class recall reveals a strong bias toward the largest group. For XGBoost, chemokine recall is 0.92, interferon and IL-1/TNF recall are 0.37 and 0.40, and angiogenic/vascular recall is only 0.06; in every group, most errors are predicted as chemokines. The four-class score therefore mainly reflects separation of interferon and IL-1/TNF responses from a chemokine-like default rather than balanced recognition of all four groups.
 
 \subsection{Replicate aggregation is most valuable under low concentration}
-Condition-level aggregation improves balanced accuracy from 0.416 with one well to 0.465 using up to six wells. The improvement is larger in the low within-treatment concentration-rank subset (0.294 to 0.396), indicating that replicate acquisition is especially useful when morphology signals are weak.
+Condition-level aggregation improves balanced accuracy from 0.416 with one well to 0.465 using up to six wells. The improvement is larger in the low within-treatment concentration-rank subset (0.294 to 0.396) than in the high-concentration subset (0.499 to 0.509), indicating that replicate acquisition is especially useful when morphology signals are weak. The same concentration dependence appears at the single-site level, where XGBoost BA rises from 0.282 (low) to 0.477 (mid) and 0.550 (high).
 
 \begin{figure}[t]
 \centering
@@ -50,7 +72,7 @@ Condition-level aggregation improves balanced accuracy from 0.416 with one well 
 \end{figure}
 
 \subsection{Plate shift and confidence-aware triage}
-Within-condition embedding similarity is higher for same-plate pairs (0.885) than cross-plate pairs (0.862). Unlabeled plate centering offers a modest Logistic balanced-accuracy increase from 0.443 to 0.450. In nested deferral, accepted-case error averaged 0.390 at approximately 70.5\% coverage, versus 0.449 before deferral. Fold variability was substantial; therefore, we interpret deferral as an exploratory re-measurement triage policy rather than a fixed clinical decision rule.
+Within-condition embedding similarity is higher for same-plate pairs (0.885) than cross-plate pairs (0.862). Unlabeled plate centering offers a modest Logistic balanced-accuracy increase from 0.443 to 0.450. In nested deferral, accepted-case error averaged 0.390 at approximately 70.5\% coverage, versus 0.449 before deferral, and deferral lowered error in all five outer folds. Fold variability was nevertheless substantial: selected thresholds ranged from 0.45 to 0.60, coverage from 37\% to 81\%, and accepted-case error from 0.279 to 0.478. We also tested whether agreement among sites of the same well could flag unreliable predictions, but error did not decrease monotonically across consistency quartiles (0.467, 0.440, 0.484, 0.418). Therefore, we interpret deferral as an exploratory re-measurement triage policy rather than a fixed clinical decision rule.
 
 \begin{figure}[t]
 \centering
@@ -60,19 +82,20 @@ Within-condition embedding similarity is higher for same-plate pairs (0.885) tha
 \end{figure}
 
 \subsection{Reduced-channel raw-image screening}
-Table~\ref{tab:channels} and Fig.~\ref{fig:channels} summarize raw-image ablations under the same treatment-held-out protocol. The six-channel configuration was strongest and stable across seeds (balanced accuracy $0.398\pm0.002$). Reducing input to DNA/RNA/mitochondria lowered balanced accuracy to $0.362\pm0.003$ and Macro-F1 to $0.348\pm0.020$. The two-channel DNA/mitochondria setting obtained similar single-seed balanced accuracy (0.365), but this result is exploratory and should not be used to rank two versus three channels. Thus, reduced acquisition lowered computational burden, but complementary multi-organelle information remained beneficial for robust screening of unseen treatments.
+Table~\ref{tab:channels} and Fig.~\ref{fig:channels} summarize raw-image ablations under the same treatment-held-out protocol. The six-channel configuration was strongest and stable across seeds (balanced accuracy $0.398\pm0.002$). Reducing input to DNA/RNA/mitochondria lowered balanced accuracy to $0.362\pm0.003$ and Macro-F1 to $0.348\pm0.020$. The two-channel DNA/mitochondria setting obtained similar single-seed balanced accuracy (0.365), but this result is exploratory and should not be used to rank two versus three channels. Because only the first convolution depends on the number of input channels, channel reduction barely changes the network: the model has 1.52~M parameters in every configuration, compute falls only from 60.9 to 55.5 and 53.7~MMACs, and single-thread CPU latency changes from 7.9 to 7.6 and 7.5~ms per site. The practical saving of reduced-channel imaging is therefore in acquisition time, staining, and image data volume (one half or one third of the six-channel data), not in inference. Within this trade-off, complementary multi-organelle information remained beneficial for screening unseen treatments.
 
 \begin{table}[t]
-\caption{Strict treatment-held-out raw-image channel ablation. Mean $\pm$ standard deviation is reported when two seeds are available.}
+\caption{Strict treatment-held-out raw-image channel ablation. Mean $\pm$ standard deviation is reported when two seeds are available. MMACs: MobileNetV3-Small multiply--accumulate operations per $224\times224$ site.}
 \label{tab:channels}
 \centering
-\begin{tabular}{lccc}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcccc}
 \toprule
-Input configuration & Macro-F1 & BA & Seeds \\
+Input configuration & Macro-F1 & BA & MMACs & Seeds \\
 \midrule
-6 channels (all stains) & $0.394\pm0.011$ & $0.398\pm0.002$ & 2 \\
-3 channels (DNA/RNA/Mito) & $0.348\pm0.020$ & $0.362\pm0.003$ & 2 \\
-2 channels (DNA/Mito) & 0.348 & 0.365 & 1$^*$ \\
+6 ch (all stains) & $0.394\pm0.011$ & $0.398\pm0.002$ & 60.9 & 2 \\
+3 ch (DNA/RNA/Mito) & $0.348\pm0.020$ & $0.362\pm0.003$ & 55.5 & 2 \\
+2 ch (DNA/Mito) & 0.348 & 0.365 & 53.7 & 1$^*$ \\
 \bottomrule
 \end{tabular}
 \\[-2pt]
@@ -87,7 +110,7 @@ Input configuration & Macro-F1 & BA & Seeds \\
 \end{figure}
 
 \section{Discussion and Limitations}
-The four broad groups are biologically reviewed but are not equally separable in released HUVEC morphology embeddings: the chemokine--angiogenic binary diagnostic is near chance. Results also decrease under HUVEC domain shift. The reduced-channel experiment uses a subset of a high-content research assay and does not demonstrate operation on a consumer-grade microscope. Therefore, the system should be framed as reliability-aware candidate screening and re-measurement prioritization, not clinical diagnosis, definitive mechanism annotation, or a deployed consumer device.
+The four broad groups are biologically reviewed but are not equally separable in released HUVEC morphology embeddings. A dedicated chemokine--angiogenic binary diagnostic is near chance (site-level BA 0.510, ROC-AUC 0.521; condition-level BA 0.461), consistent with the near-zero angiogenic recall in the four-class setting. A screening policy should therefore report group-specific reliability, and merging these two groups may be more appropriate for this cell type. Results also decrease under experiment shift: training on HUVEC-1 and testing the same treatments on HUVEC-2 yields BA of only 0.374 (Logistic) and 0.368 (XGBoost), below the treatment-held-out score obtained when both experiments are pooled. Experiment-level variation, and not only treatment novelty, therefore limits transfer. The raw-image comparison uses a single treatment split; seed variation is small, but variation across alternative treatment splits is not captured. The reduced-channel experiment uses a subset of a high-content research assay and does not demonstrate operation on a consumer-grade microscope. Therefore, the system should be framed as reliability-aware candidate screening and re-measurement prioritization, not clinical diagnosis, definitive mechanism annotation, or a deployed consumer device.
 
 \section{Conclusion}
 Under treatment shift, repeat-well aggregation, batch-awareness, compact post-embedding classification, and uncertainty-aware referral provide useful controls for morphology-based candidate screening. Six-channel imaging offered the strongest raw-image result, whereas reduced-channel acquisition exposes a measurable accuracy--burden trade-off. Future work should validate this policy prospectively and on independently acquired imaging systems.
