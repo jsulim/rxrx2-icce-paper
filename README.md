@@ -1,6 +1,6 @@
 # RxRx2 ICCE paper
 
-Working title: **Reliability-Aware Phenotype Screening from Public Morphological Embeddings under Replicate Scarcity and Plate Shift**.
+Working title: **Reliability-Aware Phenotype Screening under Treatment and Experiment Shift**.
 
 This repository contains only the LaTeX manuscript, final figures and compact result tables. Experiment code and detailed CSV outputs live in the private companion repository `xrx2-screening-code`.
 
