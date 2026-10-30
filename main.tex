@@ -176,21 +176,21 @@ Transferring across experiments lowers treatment-held-out BA to 0.344--0.402 (Ta
 The controls that helped under treatment shift do not transfer as such. Averaging six wells changes condition-level BA from 0.340 to 0.323 ($-0.016$, CI $-0.096$ to 0.060), and nested deferral accepts 88\% of sites while raising their BA by only 0.012 (CI 0.004--0.029), so confidence learned in one experiment carries little information in the other. Both label-free centerings recover site-level BA by 0.026--0.049 (Table~\ref{tab:shift}); control-well centering performs on par with centering on all sites. After centering, deferral regains its benefit with the source-experiment threshold and no target labels: accepted-site BA rises by 0.052 (CI 0.025--0.093) at 65\% coverage with control-well centering and by 0.055 (CI 0.028--0.090) with all-site centering. Replicate aggregation, in contrast, stays ineffective after centering ($+0.011$, CI $-0.028$ to 0.052 with control-well centering). Under experiment shift, removing the experiment offset is therefore the prerequisite control that makes deferral usable again, whereas additional wells do not substitute for it.
 
 \begin{table}[t]
-\caption{Treatment-held-out BA under experiment shift (train on one HUVEC experiment, test on the other). $\Delta$: paired gain over raw embeddings from label-free centering on all sites or on control (EMPTY) sites of each experiment, with 95\% treatment-level CI. $^{\circ}$CI includes zero.}
+\caption{Treatment-held-out BA under experiment shift (train on one HUVEC experiment, test on the other). $\Delta$: paired gain over raw embeddings from label-free centering on all sites or on control (EMPTY) sites of each experiment, with 95\% treatment-level CI. LR: Logistic; XGB: XGBoost. $^{\circ}$CI includes zero.}
 \label{tab:shift}
 \centering
-\setlength{\tabcolsep}{2.5pt}
-\footnotesize
-\begin{tabular}{llccc}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lccc}
 \toprule
-Model & Test & Raw & $\Delta$ all-site (CI) & $\Delta$ control (CI) \\
+Model $\rightarrow$ test & Raw & $\Delta$ all-site (CI) & $\Delta$ control (CI) \\
 \midrule
-Logistic & HUVEC-2 & 0.365 & $+0.030$ ($-0.014$, 0.072)$^{\circ}$ & $+0.031$ ($-0.013$, 0.074)$^{\circ}$ \\
-Logistic & HUVEC-1 & 0.398 & $+0.034$ (0.001, 0.068) & $+0.038$ (0.006, 0.072) \\
-XGBoost & HUVEC-2 & 0.344 & $+0.049$ (0.019, 0.078) & $+0.049$ (0.020, 0.077) \\
-XGBoost & HUVEC-1 & 0.402 & $+0.028$ (0.0004, 0.056) & $+0.026$ ($-0.002$, 0.055)$^{\circ}$ \\
+LR $\rightarrow$ HUVEC-2 & 0.365 & $+0.030$ ($-0.014$, 0.072)$^{\circ}$ & $+0.031$ ($-0.013$, 0.074)$^{\circ}$ \\
+LR $\rightarrow$ HUVEC-1 & 0.398 & $+0.034$ (0.001, 0.068) & $+0.038$ (0.006, 0.072) \\
+XGB $\rightarrow$ HUVEC-2 & 0.344 & $+0.049$ (0.019, 0.078) & $+0.049$ (0.020, 0.077) \\
+XGB $\rightarrow$ HUVEC-1 & 0.402 & $+0.028$ (0.0004, 0.056) & $+0.026$ ($-0.002$, 0.055)$^{\circ}$ \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \subsection{Reduced-channel raw-image screening}
