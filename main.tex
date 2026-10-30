@@ -62,7 +62,7 @@ Small MLP & 0.414 & 0.417 & 0.318--0.501 & 0.477 & 0.56 & 136 \\
 Per-class recall reveals a strong bias toward the largest group. For XGBoost, chemokine recall is 0.92, interferon and IL-1/TNF recall are 0.37 and 0.40, and angiogenic/vascular recall is only 0.06; in every group, most errors are predicted as chemokines. The four-class score therefore mainly reflects separation of interferon and IL-1/TNF responses from a chemokine-like default rather than balanced recognition of all four groups.
 
 \subsection{Replicate aggregation is most valuable under low concentration}
-Condition-level aggregation improves balanced accuracy from 0.416 with one well to 0.465 using up to six wells (Fig.~ef{fig:replicates}). The improvement is larger in the low within-treatment concentration-rank subset (0.294 to 0.396) than in the high-concentration subset (0.499 to 0.509), indicating that replicate acquisition is especially useful when morphology signals are weak. The same concentration dependence appears at the single-site level, where XGBoost BA rises from 0.282 (low) to 0.477 (mid) and 0.550 (high).
+Condition-level aggregation improves balanced accuracy from 0.416 with one well to 0.465 using up to six wells (Fig.~\ref{fig:replicates}). The improvement is larger in the low within-treatment concentration-rank subset (0.294 to 0.396) than in the high-concentration subset (0.499 to 0.509), indicating that replicate acquisition is especially useful when morphology signals are weak. The same concentration dependence appears at the single-site level, where XGBoost BA rises from 0.282 (low) to 0.477 (mid) and 0.550 (high).
 
 \begin{figure}[t]
 \centering
