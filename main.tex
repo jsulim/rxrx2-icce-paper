@@ -28,7 +28,7 @@ lia0723@g.skku.edu}
 Seoul, Korea\\
 knj01@snu.ac.kr}
 \and
-\IEEEauthorblockN{Hyuk-Jae Lee}
+\IEEEauthorblockN{Hyuk-Jae Lee$^{\dagger}$}
 \IEEEauthorblockA{Seoul National University\\
 Seoul, Korea\\
 hyukjae@snu.ac.kr}
@@ -36,6 +36,7 @@ hyukjae@snu.ac.kr}
 
 \begin{document}
 \maketitle
+{\let\thefootnote\relax\footnotetext{$^{\dagger}$Corresponding authors.}}
 
 \begin{abstract}
 Morphology-based screening of unseen treatments must decide not only which response group a sample belongs to, but whether the prediction can be trusted and how much imaging is worth acquiring. We formulate this as a reliability-aware policy that accepts a prediction, aggregates additional replicate wells, or defers it for re-measurement, and evaluate it for 37 immune and vascular stimuli in public RxRx2 HUVEC Cell Painting data with entire treatments held out. A 6~KB Logistic model on released embeddings reaches balanced accuracy 0.442, but chemokine and angiogenic responses are nearly indistinguishable. Under a treatment-level paired bootstrap, aggregating six replicate wells improves balanced accuracy by 0.049 (95\% CI 0.005--0.096), and nested confidence-based deferral lowers accepted-case error by 0.046 (0.005--0.089) at 71\% coverage. Experiment shift compounds treatment shift, reducing balanced accuracy to 0.374 even for treatments seen in training. Reducing raw-image input from six to three channels lowers balanced accuracy from 0.398 to 0.362 while leaving inference compute almost unchanged, so its benefit lies in staining, acquisition, and storage cost.
