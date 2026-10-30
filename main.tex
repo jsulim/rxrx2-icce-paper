@@ -5,6 +5,8 @@
 \usepackage{xcolor}
 \usepackage{url}
 
+% Equal-width author blocks so the three columns line up across rows.
+\newcommand{\authorcol}[1]{\makebox[0.3\textwidth]{#1}}
 % Start a new row of author blocks (IEEE template lists authors left to right, three per row).
 \makeatletter
 \newcommand{\linebreakand}{%
@@ -18,37 +20,37 @@
 
 \author{
 \IEEEauthorblockN{Junsu Lim}
-\IEEEauthorblockA{OUTTA\\
+\IEEEauthorblockA{\authorcol{OUTTA}\\
 Seoul, Korea\\
 junsu.lim@outta.ai}
 \and
 \IEEEauthorblockN{Kyeonghun Kim}
-\IEEEauthorblockA{OUTTA\\
+\IEEEauthorblockA{\authorcol{OUTTA}\\
 Seoul, Korea\\
 kyeonghun.kim@outta.ai}
 \and
 \IEEEauthorblockN{Sewon Park}
-\IEEEauthorblockA{Sungkyunkwan University\\
+\IEEEauthorblockA{\authorcol{Sungkyunkwan University}\\
 Suwon, Korea\\
 lia0723@g.skku.edu}
 \linebreakand
 \IEEEauthorblockN{Youngung Han}
-\IEEEauthorblockA{Seoul National University\\
+\IEEEauthorblockA{\authorcol{Seoul National University}\\
 Seoul, Korea\\
 yuhan@snu.ac.kr}
 \and
 \IEEEauthorblockN{Ken Ying-Kai Liao}
-\IEEEauthorblockA{NVIDIA AI Technology Center\\
+\IEEEauthorblockA{\authorcol{NVIDIA AI Technology Center}\\
 Taipei, Taiwan\\
 kenyingkail@nvidia.com}
 \and
-\IEEEauthorblockN{Hyuk-Jae Lee$^{\dagger}$}
-\IEEEauthorblockA{Seoul National University\\
+\IEEEauthorblockN{Hyuk-Jae Lee\smash{$^{\dagger}$}}
+\IEEEauthorblockA{\authorcol{Seoul National University}\\
 Seoul, Korea\\
 hyukjae@snu.ac.kr}
 \linebreakand
-\IEEEauthorblockN{Nam-Joon Kim$^{\dagger}$}
-\IEEEauthorblockA{Seoul National University\\
+\IEEEauthorblockN{Nam-Joon Kim\smash{$^{\dagger}$}}
+\IEEEauthorblockA{\authorcol{Seoul National University}\\
 Seoul, Korea\\
 knj01@snu.ac.kr}
 }
