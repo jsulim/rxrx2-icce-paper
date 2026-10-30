@@ -27,6 +27,11 @@ lia0723@g.skku.edu}
 \IEEEauthorblockA{Seoul National University\\
 Seoul, Korea\\
 knj01@snu.ac.kr}
+\and
+\IEEEauthorblockN{Hyuk-Jae Lee}
+\IEEEauthorblockA{Seoul National University\\
+Seoul, Korea\\
+hyukjae@snu.ac.kr}
 }
 
 \begin{document}
@@ -147,7 +152,7 @@ Pooling the five outer folds, nested deferral gives accepted-case error 0.404 at
 Training on HUVEC-1 and testing on HUVEC-2 within the treatment-held-out folds lowers BA to 0.365 (Logistic), 0.344 (XGBoost), and 0.325 (MLP), versus 0.417--0.442 with both experiments pooled. Even when the same treatments appear in both experiments, BA reaches only 0.374 (Logistic) and 0.368 (XGBoost). Seen stimuli in a new experiment are thus recognized less reliably than unseen stimuli within pooled experiments, so practical screening faces both shifts at once.
 
 \subsection{Reduced-channel raw-image screening}
-The six-channel configuration was strongest and stable across seeds (Table~\ref{tab:channels}); reducing to DNA/RNA/mitochondria lowered BA from 0.398 to 0.362, and the single-seed two-channel result does not rank two versus three channels. Because only the first convolution depends on the channel count, all configurations have 1.52~M parameters, compute falls only from 60.9 to 55.5 and 53.7~MMACs, and single-thread CPU latency from 7.9 to 7.6 and 7.5~ms per site. The saving of reduced-channel imaging lies in stains, optics, acquisition time, and image data volume (one half or one third of the six-channel data), not in inference, and it costs measurable accuracy. Complementary multi-organelle information therefore remains beneficial for screening unseen treatments.
+The six-channel configuration was strongest and stable across seeds (Table~\ref{tab:channels}, Fig.~\ref{fig:channels}); reducing to DNA/RNA/mitochondria lowered BA from 0.398 to 0.362, and the single-seed two-channel result does not rank two versus three channels. Because only the first convolution depends on the channel count, all configurations have 1.52~M parameters, compute falls only from 60.9 to 55.5 and 53.7~MMACs, and single-thread CPU latency from 7.9 to 7.6 and 7.5~ms per site. The saving of reduced-channel imaging lies in stains, optics, acquisition time, and image data volume (one half or one third of the six-channel data), not in inference, and it costs measurable accuracy. Complementary multi-organelle information therefore remains beneficial for screening unseen treatments.
 
 \begin{table}[t]
 \caption{Raw-image channel ablation (fixed split, 9 test treatments). Mean $\pm$ SD over two seeds where available. MMACs per $224\times224$ site.}
@@ -166,6 +171,13 @@ Input configuration & Macro-F1 & BA & MMACs & Seeds \\
 \par\vspace{3pt}
 {\footnotesize $^*$Exploratory single-seed result.\par}
 \end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_channel_ablation.png}
+\caption{Raw-image channel ablation on the treatment-held-out test set. Error bars show standard deviation across two seeds; the hatched two-channel bar is exploratory.}
+\label{fig:channels}
+\end{figure}
 
 \section{Discussion and Limitations}
 Chemokine and angiogenic stimuli are confused regardless of classifier, so a screening policy should report group-specific reliability, and a three-group formulation may suit this cell type better. The reliability gains are modest and their intervals wide because only 37 treatments are available; they should be confirmed on larger panels, and the deferral threshold requires larger calibration sets before it can be fixed in advance. Only two HUVEC experiments are available, so experiment shift on independently acquired systems remains to be measured. The raw-image comparison uses a single split with nine test treatments; seed variation is small, but variation across alternative splits is not captured. All images come from a high-content research platform, so the channel ablation emulates, but does not demonstrate, a lower-cost imager. The system should be framed as candidate screening and re-measurement prioritization, not clinical diagnosis or definitive mechanism annotation.
