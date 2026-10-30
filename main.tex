@@ -44,7 +44,7 @@ yuhan@snu.ac.kr}
 Taipei, Taiwan\\
 kenyingkail@nvidia.com}
 \and
-\IEEEauthorblockN{Hyuk-Jae Lee\smash{$^{\dagger}$}}
+\IEEEauthorblockN{Hyuk-Jae Lee}
 \IEEEauthorblockA{\authorcol{Seoul National University}\\
 Seoul, Korea\\
 hyukjae@snu.ac.kr}
@@ -57,7 +57,7 @@ knj01@snu.ac.kr}
 
 \begin{document}
 \maketitle
-{\let\thefootnote\relax\footnotetext{$^{\dagger}$Corresponding authors.}}
+{\let\thefootnote\relax\footnotetext{$^{\dagger}$Corresponding author.}}
 
 \begin{abstract}
 Morphology-based screening of unseen treatments must decide not only which response group a sample belongs to, but whether the prediction can be trusted and how much imaging is worth acquiring. We formulate this as a reliability-aware policy that accepts a prediction, aggregates additional replicate wells, or defers it for re-measurement, and evaluate it for 37 immune and vascular stimuli in public RxRx2 HUVEC Cell Painting data with entire treatments held out. A 6~KB Logistic model on released embeddings reaches balanced accuracy 0.442, but chemokine and angiogenic responses are nearly indistinguishable. Under treatment shift, a treatment-level paired bootstrap shows that aggregating six replicate wells improves balanced accuracy by 0.049 (95\% CI 0.005--0.096), and nested confidence-based deferral raises balanced accuracy of accepted predictions by 0.100 (0.048--0.120) at 53\% coverage. Under experiment shift, where models trained on one HUVEC experiment are tested on the other, both controls lose most of their benefit. Centering each experiment on its untreated control wells, which needs no labels, lowers balanced error at every coverage level (area reduction 0.059, 0.026--0.085) and returns the source-calibrated deferral threshold to a selective operating point, but yields no detectable aggregation gain. Reducing raw-image input from six to three channels lowers balanced accuracy from 0.398 to 0.362 while leaving inference compute almost unchanged, so its benefit lies in staining, acquisition, and storage cost.
