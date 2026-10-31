@@ -112,7 +112,7 @@ On embeddings we benchmark standardized, class-weighted Logistic Regression; XGB
 
 \section{Results}
 \subsection{Embedding baselines and group-specific behavior}
-Logistic Regression attains the highest BA (0.442) with a 6.1~KB model and 0.47~ms per site, while class weighting improves XGBoost's macro-F1 (0.458) and calibration (ECE 0.013) at unchanged cost (Table~\ref{tab:embedding}); this class-weighted model is used for deferral. The small MLP is poorly calibrated (ECE 0.477) and therefore unsuitable for confidence-based deferral. Treatment-level intervals are wide and overlap across models, so the ranking should not be over-interpreted. Reducing the Logistic input to 32 principal components retains BA (0.446), whereas 16 components lower it to 0.431; the post-embedding decision layer can therefore be compact, although this does not reduce the cost of producing the embedding.
+Logistic Regression reaches BA 0.442, within 0.004 of the best model (class-weighted XGBoost, 0.446), with a 6.1~KB model and 0.47~ms per site, while class weighting improves XGBoost's macro-F1 (0.458) and calibration (ECE 0.013) at unchanged cost (Table~\ref{tab:embedding}); this class-weighted model is used for deferral. The small MLP is poorly calibrated (ECE 0.477) and therefore unsuitable for confidence-based deferral. Treatment-level intervals are wide and overlap across models, so the ranking should not be over-interpreted. Reducing the Logistic input to 32 principal components retains BA (0.446), whereas 16 components lower it to 0.431; the post-embedding decision layer can therefore be compact, although this does not reduce the cost of producing the embedding.
 
 \begin{table}[t]
 \caption{Treatment-held-out embedding baselines. CI: 95\% treatment-level bootstrap interval for BA. ms: per-site CPU latency. KB: serialized pipeline size including the scaler. The class-weighted XGBoost shares the architecture and cost of the unweighted one.}
@@ -123,9 +123,9 @@ Logistic Regression attains the highest BA (0.442) with a 6.1~KB model and 0.47~
 \toprule
 Model & F1 & BA & BA 95\% CI & ECE & ms & KB \\
 \midrule
-Logistic & 0.431 & \textbf{0.442} & 0.330--0.549 & 0.071 & 0.47 & 6.1 \\
+Logistic & 0.431 & 0.442 & 0.330--0.549 & 0.071 & 0.47 & 6.1 \\
 XGBoost (unweighted) & 0.447 & 0.438 & 0.335--0.535 & 0.030 & 2.57 & 1,624 \\
-XGBoost (weighted) & \textbf{0.458} & 0.446 & 0.341--0.542 & \textbf{0.013} & 2.57 & 1,622 \\
+XGBoost (weighted) & \textbf{0.458} & \textbf{0.446} & 0.341--0.542 & \textbf{0.013} & 2.57 & 1,622 \\
 Small MLP & 0.414 & 0.417 & 0.318--0.501 & 0.477 & 0.56 & 136 \\
 \bottomrule
 \end{tabular}
